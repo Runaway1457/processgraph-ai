@@ -1,0 +1,20 @@
+import { COOKIE_NAME } from "@shared/const";
+import { getSessionCookieOptions } from "./_core/cookies";
+import { publicProcedure, router } from "./_core/trpc";
+import { processGraphRouter } from "./processGraph.router";
+
+export const appRouter = router({
+  processGraph: processGraphRouter,
+  auth: router({
+    me: publicProcedure.query(opts => opts.ctx.user),
+    logout: publicProcedure.mutation(({ ctx }) => {
+      const cookieOptions = getSessionCookieOptions(ctx.req);
+      ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
+      return {
+        success: true,
+      } as const;
+    }),
+  }),
+});
+
+export type AppRouter = typeof appRouter;
