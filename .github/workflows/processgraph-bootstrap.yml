@@ -1,0 +1,24 @@
+name: Restore reviewed repository
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  restore:
+    if: github.actor == 'Runaway1457'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Restore reviewed Git history
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          base64 -d processgraph.bundle.b64 > /tmp/processgraph.bundle
+          git clone -b github-transport /tmp/processgraph.bundle /tmp/processgraph-restored
+          cd /tmp/processgraph-restored
+          git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git push --force origin github-transport:main
